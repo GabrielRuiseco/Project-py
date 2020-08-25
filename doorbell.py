@@ -30,8 +30,8 @@ mCon = mongodb.MongoConect()
 DB = mCon.CLIENT['adonismongo']
 directorios = DB['directorios']
 
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 try:
     import RPi.GPIO as GPIO
@@ -138,7 +138,16 @@ class Doorbell:
 if __name__ == "__main__":
     doorbell = Doorbell(DOORBELL_PIN)
     doorbell.run()
-    ultrs = Ultrasonic()
+    try:
+        while True:
+            dist = Ultrasonic.distance
+            print("Measured Distance = %.1f cm" % dist)
+            if dist < 5:
+                ring_doorbell(DOORBELL_PIN)
+            time.sleep(1)
 
-    if (ultrs.get_distance() < 10):
-        ring_doorbell(DOORBELL_PIN)
+        # Reset by pressing CTRL + C
+    except KeyboardInterrupt:
+        print("Measurement stopped by User")
+        GPIO.cleanup()
+

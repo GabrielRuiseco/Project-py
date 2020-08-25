@@ -1,36 +1,47 @@
+# Libraries
 import RPi.GPIO as GPIO
 import time
 
+# GPIO Mode (BOARD / BCM)
+GPIO.setmode(GPIO.BCM)
+
+# set GPIO Pins
+GPIO_TRIGGER = 18
+GPIO_ECHO = 24
+
+# set GPIO direction (IN / OUT)
+GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
+GPIO.setup(GPIO_ECHO, GPIO.IN)
+
+
 class Ultrasonic:
 
-    def __init__(self):
-        self.TRIG = 23
-        self.ECHO = 26
-        print("Measuring distance in progress")
+    def distance(self):
+        # set Trigger to HIGH
+        GPIO.output(GPIO_TRIGGER, True)
 
-    def start(self):
-        self.__configure()
-
-    def __configure(self):
-        GPIO.cleanup()
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.TRIG, GPIO.OUT)
-        GPIO.setup(self.ECHO, GPIO.IN)
-        GPIO.output(self.TRIG, False)
-        print('Waiting for sensor to settle')
-        time.sleep(2)
-        GPIO.output(self.TRIG, True)
+        # set Trigger after 0.01ms to LOW
         time.sleep(0.00001)
-        GPIO.output(self.TRIG, False)
+        GPIO.output(GPIO_TRIGGER, False)
 
-    def get_distance(self) -> float:
-        while GPIO.input(self.ECHO) == 0:
-            pulse_start = time.time()
-        while GPIO.input(self.ECHO) == 1:
-            pulse_end = time.time()
+        StartTime = time.time()
+        StopTime = time.time()
 
-        pulse_duration = pulse_end - pulse_start
-        distance = pulse_duration * 17150
-        distance = round(distance, 2)
-        print("Distance:", distance, "cm")
+        # save StartTime
+        while GPIO.input(GPIO_ECHO) == 0:
+            StartTime = time.time()
+
+        # save time of arrival
+        while GPIO.input(GPIO_ECHO) == 1:
+            StopTime = time.time()
+
+        # time difference between start and arrival
+        TimeElapsed = StopTime - StartTime
+        # multiply with the sonic speed (34300 cm/s)
+        # and divide by 2, because there and back
+        distance = (TimeElapsed * 34300) / 2
+
         return distance
+
+
+Ultrasonic.distance = staticmethod(Ultrasonic.distance)
