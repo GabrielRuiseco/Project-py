@@ -1,4 +1,6 @@
 # Doorbell pin
+import json
+
 DOORBELL_PIN = 21
 # Enables email notifications
 ENABLE_EMAIL = True
@@ -25,6 +27,7 @@ import signal
 import subprocess
 import smtplib
 import uuid
+import threading
 
 mCon = mongodb.MongoConect()
 DB = mCon.CLIENT['adonismongo']
@@ -37,6 +40,24 @@ try:
     import RPi.GPIO as GPIO
 except RuntimeError:
     print("Error importing RPi.GPIO. This is probably because you need superuser. Try running again with 'sudo'.")
+
+import requests
+
+
+def send():
+    url = 'http://127.0.0.1:4000/cgi-bin/api/uploadimg/1'
+    files = {'image': open('test.jpg', 'rb')}
+    headers = {
+        'authorization': "Bearer " + login()
+    }
+    requests.post(url, files=files, headers=headers)
+
+
+def login():
+    pload = {'email': 'pruebas@mail.com', 'password': 'pruebas'}
+    r = requests.post('http://127.0.0.1:4000/emp/login', data=pload)
+    print(r.json()['token'])
+    return r.json()['token']
 
 
 class NewObject:
@@ -71,6 +92,7 @@ def send_email_notification():
 def ring_doorbell(pin):
     send_email_notification()
     save_new_object()
+    login()
 
 
 class EmailSender:
@@ -138,16 +160,3 @@ class Doorbell:
 if __name__ == "__main__":
     doorbell = Doorbell(DOORBELL_PIN)
     doorbell.run()
-    try:
-        while True:
-            dist = Ultrasonic.distance
-            print("Measured Distance = %.1f cm" % dist)
-            if dist < 5:
-                ring_doorbell(DOORBELL_PIN)
-            time.sleep(1)
-
-        # Reset by pressing CTRL + C
-    except KeyboardInterrupt:
-        print("Measurement stopped by User")
-        GPIO.cleanup()
-
