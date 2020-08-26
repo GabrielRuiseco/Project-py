@@ -2,7 +2,7 @@ import requests
 
 
 def send(token):
-    url = 'http://127.0.0.1:3000/api/uploadimg/1'
+    url = 'http://ec2-3-85-144-25.compute-1.amazonaws.com/api/api/uploadimg/1'
     files = {'image': open('399360fc22f7c5310ef0efe4ff09c9f8.jpg', 'rb')}
     headers = {
         'Authorization': "Bearer " + token
@@ -12,7 +12,7 @@ def send(token):
 
 def login():
     pload = {'email': 'pruebas@mail.com', 'password': 'pruebas'}
-    r = requests.post('http://127.0.0.1:3000/emp/login', data=pload)
+    r = requests.post('http://ec2-3-85-144-25.compute-1.amazonaws.com/api/emp/login', data=pload)
     print(r.json()['token'])
     return r.json()['token']
 

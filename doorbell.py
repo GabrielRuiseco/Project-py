@@ -45,7 +45,7 @@ import requests
 
 
 def send():
-    url = 'http://127.0.0.1:4000/cgi-bin/api/uploadimg/1'
+    url = 'http://ec2-3-85-144-25.compute-1.amazonaws.com/api/api/uploadimg/1'
     files = {'image': open('test.jpg', 'rb')}
     headers = {
         'authorization': "Bearer " + login()
@@ -55,7 +55,7 @@ def send():
 
 def login():
     pload = {'email': 'pruebas@mail.com', 'password': 'pruebas'}
-    r = requests.post('http://127.0.0.1:4000/emp/login', data=pload)
+    r = requests.post('http://ec2-3-85-144-25.compute-1.amazonaws.com/api/emp/login', data=pload)
     print(r.json()['token'])
     return r.json()['token']
 
