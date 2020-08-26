@@ -1,5 +1,8 @@
 # Doorbell pin
 import json
+import sys
+
+import websocket
 
 DOORBELL_PIN = 21
 # Enables email notifications
@@ -157,6 +160,44 @@ class Doorbell:
         GPIO.cleanup(self._doorbell_button_pin)
 
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(26, GPIO.OUT)
+
+
+def openDoor():
+    GPIO.output(26, True)
+    time.sleep(15)
+    closeDoor()
+
+
+def closeDoor():
+    GPIO.output(26, False)
+
+
+def on_message(ws, message):
+    print(message)
+    data = json.loads(message)
+    event = data['d']['event']
+    if event == 'opening':
+        openDoor()
+    elif event == 'closing':
+        closeDoor()
+
+
+def on_error(ws, error):
+    print(error)
+
+
 if __name__ == "__main__":
     doorbell = Doorbell(DOORBELL_PIN)
     doorbell.run()
+    url = f'ws://3.85.144.25:4000/adonis-ws'
+    ws = websocket.WebSocketApp(url, on_message=on_message, on_error=on_error)
+    try:
+        while True:
+            try:
+                ws.run_forever()
+            except KeyboardInterrupt:
+                sys.exit(1)
+    except KeyboardInterrupt:
+        sys.exit(1)
